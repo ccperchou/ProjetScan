@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form id="cv-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="cv" accept=".pdf,.docx" required>
+    <button type="submit">Générer le Dossier</button>
+</form>
+
+<div id="progress" style="display: none;">
+    <p>Traitement en cours... <span id="status"></span></p>
+    <progress value="0" max="100"></progress>
+</div>
+
+<script>
+document.getElementById('cv-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    document.getElementById('progress').style.display = 'block';
+
+    // Soumettre le formulaire via AJAX
+    const formData = new FormData(this);
+    fetch("{% url 'upload_cv' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        window.location.href = `/download/${data.cv_id}/`;
+    });
+});
+</script>
+{% endblock %}
